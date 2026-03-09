@@ -1,5 +1,3 @@
-import qrcode
-import io
 import json
 from django.shortcuts import render, get_object_or_404, redirect
 from django.http import JsonResponse, HttpResponse
@@ -8,10 +6,11 @@ from django.contrib.auth import login, logout, authenticate
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from .models import PrescriptionTicket
+from .utils import produce_qr_code
 
 @login_required
 def dashboard(request):
-    return render(request, 'queue_manager/dashboard.html')
+    return render(request, 'dashboard.html')
 
 def signup_view(request):
     if request.method == 'POST':
@@ -41,7 +40,7 @@ def logout_view(request):
 
 def track_ticket(request, ticket_id):
     ticket = get_object_or_404(PrescriptionTicket, id=ticket_id)
-    return render(request, 'queue_manager/track.html', {'ticket': ticket})
+    return render(request, 'patient_status.html', {'ticket': ticket})
 
 def api_ticket_list(request):
     tickets = PrescriptionTicket.objects.exclude(status='Collected').order_by('created_at')
@@ -102,15 +101,6 @@ def api_update_status(request, ticket_id):
 
 def generate_qr(request, ticket_id):
     ticket = get_object_or_404(PrescriptionTicket, id=ticket_id)
-    # Use full URL for tracking
     track_url = request.build_absolute_uri(f'/track/{ticket.id}/')
-    
-    qr = qrcode.QRCode(version=1, box_size=10, border=4)
-    qr.add_data(track_url)
-    qr.make(fit=True)
-
-    img = qr.make_image(fill_color="black", back_color="white")
-    
-    buffer = io.BytesIO()
-    img.save(buffer, format="PNG")
-    return HttpResponse(buffer.getvalue(), content_type="image/png")
+    qr_image_data = produce_qr_code(track_url)
+    return HttpResponse(qr_image_data, content_type="image/png")
