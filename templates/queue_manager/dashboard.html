@@ -1,0 +1,179 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12 d-flex justify-content-between align-items-center">
+        <h2 class="fw-bold mb-0">Pharmacist Dashboard</h2>
+        <button type="button" class="btn btn-primary btn-lg rounded-pill px-4" data-bs-toggle="modal"
+            data-bs-target="#addPatientModal">
+            + New Ticket
+        </button>
+    </div>
+</div>
+
+<div class="card p-4">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0" id="ticketsTable">
+            <thead class="table-light">
+                <tr>
+                    <th class="border-0">#</th>
+                    <th class="border-0">Patient Name</th>
+                    <th class="border-0">Status</th>
+                    <th class="border-0">Pharmacist</th>
+                    <th class="border-0">Created At</th>
+                    <th class="border-0">Actions</th>
+                    <th class="border-0">QR Code</th>
+                </tr>
+            </thead>
+            <tbody id="ticketsBody">
+                <!-- Data will be populated by JS -->
+                <tr>
+                    <td colspan="7" class="text-center py-4 text-muted small">Loading tickets...</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Add Patient Modal -->
+<div class="modal fade" id="addPatientModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg" style="border-radius: 20px;">
+            <div class="modal-header border-0 pb-0">
+                <h5 class="modal-title fw-bold" id="addPatientModalLabel">New Prescription Ticket</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4">
+                <form id="addTicketForm">
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Patient Name</label>
+                        <input type="text" class="form-control" name="patient_name" placeholder="John Doe" required>
+                    </div>
+                    <div class="mb-4">
+                        <label class="form-label fw-semibold">Phone Number (Optional)</label>
+                        <input type="text" class="form-control" name="phone_number" placeholder="+60123456789">
+                    </div>
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-primary btn-lg rounded-pill py-2">Create Ticket</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- QR Code Modal -->
+<div class="modal fade" id="qrModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered modal-sm">
+        <div class="modal-content border-0 shadow-lg text-center" style="border-radius: 20px;">
+            <div class="modal-header border-0 pb-0 justify-content-center">
+                <h5 class="modal-title fw-bold">Ticket QR Code</h5>
+            </div>
+            <div class="modal-body p-4">
+                <div id="qrContainer" class="mb-3">
+                    <img id="qrImage" src="" class="img-fluid rounded-3" style="max-width: 200px;">
+                </div>
+                <p class="small text-muted mb-3" id="qrPatientName"></p>
+                <div class="d-grid">
+                    <button type="button" class="btn btn-secondary rounded-pill" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const ticketsBody = document.getElementById('ticketsBody');
+        const addTicketForm = document.getElementById('addTicketForm');
+        const qrImage = document.getElementById('qrImage');
+        const qrPatientName = document.getElementById('qrPatientName');
+        const qrModal = new bootstrap.Modal(document.getElementById('qrModal'));
+        const addPatientModal = new bootstrap.Modal(document.getElementById('addPatientModal'));
+
+        function fetchTickets() {
+            fetch('/api/tickets/')
+                .then(res => res.json())
+                .then(data => {
+                    if (data.tickets.length === 0) {
+                        ticketsBody.innerHTML = '<tr><td colspan="6" class="text-center py-4 text-muted small">No active tickets.</td></tr>';
+                        return;
+                    }
+
+                    ticketsBody.innerHTML = '';
+                    data.tickets.forEach(ticket => {
+                        const statusBadgeClass = {
+                            'Preparing': 'bg-warning text-dark',
+                            'Ready': 'bg-success',
+                            'Collected': 'bg-secondary'
+                        }[ticket.status] || 'bg-light text-dark';
+
+                        const row = `
+                        <tr>
+                            <td class="fw-bold text-primary">#${ticket.queue_number}</td>
+                            <td class="fw-medium">${ticket.patient_name}</td>
+                            <td><span class="badge ${statusBadgeClass} rounded-pill px-3 py-2">${ticket.status}</span></td>
+                            <td class="small text-muted">${ticket.pharmacist}</td>
+                            <td class="text-muted small">${ticket.created_at}</td>
+                            <td>
+                                <div class="btn-group btn-group-sm rounded-pill overflow-hidden shadow-sm">
+                                    <button class="btn btn-outline-warning" onclick="updateStatus('${ticket.id}', 'Preparing')">Prep</button>
+                                    <button class="btn btn-outline-success" onclick="updateStatus('${ticket.id}', 'Ready')">Ready</button>
+                                    <button class="btn btn-outline-secondary" onclick="updateStatus('${ticket.id}', 'Collected')">Done</button>
+                                </div>
+                            </td>
+                            <td>
+                                <button class="btn btn-light btn-sm rounded-pill" onclick="showQR('${ticket.id}', '${ticket.patient_name}')">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-qr-code" viewBox="0 0 16 16">
+                                        <path d="M2 1a1 1 0 0 0-1 1v2a1 1 0 0 0 1 1h2a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1zM1 2a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1zm11-1a1 1 0 0 0-1 1v2a1 1 0 0 0 1 1h2a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1zM11 2a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1h-2a1 1 0 0 1-1-1zM2 11a1 1 0 0 0-1 1v2a1 1 0 0 0 1 1h2a1 1 0 0 0 1-1v-2a1 1 0 0 0-1-1zm-1 1a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1zm8.5-1A1.5 1.5 0 0 0 8 12.5V14a1 1 0 0 0 1 1h1.5a.5.5 0 0 0 .5-.5V14h.5a.5.5 0 0 0 .5-.5V13h-.5a.5.5 0 0 0-.5-.5h-1v-.5a.5.5 0 0 0-.5-.5zm.5 2v.5h-1v-1h1zm2 1h1v1h-1zm1-2v1h-1v-1zm-3-3a1 1 0 1 0 0 2 1 1 0 0 0 0-2m2 0a1 1 0 1 0 0 2 1 1 0 0 0 0-2M7 2h1v1H7zm0 3h1v1H7zM4 7v1H3v1h1v1h1V8h1V7zm0-3h1v1H4zm11 7v1h-1v1h1v1h1v-2zm-1-4h1v1h-1zm-2 1h1v1h-1zm-2 0h1v1h-1zm2-2h1v1h-1zm1 1h1v1h-1z"/>
+                                    </svg>
+                                </button>
+                                <a href="/track/${ticket.id}/" target="_blank" class="btn btn-link btn-sm text-decoration-none ms-1">Link</a>
+                            </td>
+                        </tr>`;
+                        ticketsBody.insertAdjacentHTML('beforeend', row);
+                    });
+                });
+        }
+
+        window.updateStatus = (ticketId, newStatus) => {
+            fetch(`/api/update-status/${ticketId}/`, {
+                method: 'POST',
+                body: JSON.stringify({ status: newStatus }),
+                headers: { 'Content-Type': 'application/json' }
+            }).then(() => fetchTickets());
+        };
+
+        window.showQR = (ticketId, patientName) => {
+            qrImage.src = `/api/qr/${ticketId}/`;
+            qrPatientName.textContent = `Patient: ${patientName}`;
+            qrModal.show();
+        };
+
+        addTicketForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const formData = new FormData(addTicketForm);
+            const data = Object.fromEntries(formData.entries());
+
+            fetch('/api/create-ticket/', {
+                method: 'POST',
+                body: JSON.stringify(data),
+                headers: { 'Content-Type': 'application/json' }
+            })
+                .then(res => res.json())
+                .then(result => {
+                    if (result.status === 'success') {
+                        addPatientModal.hide();
+                        addTicketForm.reset();
+                        fetchTickets();
+                    }
+                });
+        });
+
+        fetchTickets();
+        setInterval(fetchTickets, 5000);
+    });
+</script>
+{% endblock %}

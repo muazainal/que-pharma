@@ -1,0 +1,125 @@
+{% extends 'base.html' %}
+
+{% block extra_css %}
+<style>
+    body.status-ready {
+        background-color: #d1e7dd !important;
+    }
+
+    .status-card {
+        border-radius: 20px;
+        transition: transform 0.3s ease;
+    }
+
+    .status-badge-lg {
+        font-size: 1.5rem;
+        padding: 0.75rem 2rem;
+    }
+
+    .queue-number-display {
+        font-size: 100px;
+        font-weight: 800;
+        color: #0d6efd;
+        line-height: 1;
+    }
+
+    #statusBadgeContainer {
+        min-height: 3rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center pt-5">
+    <div class="col-md-6 col-lg-5 text-center px-4">
+        <div class="card p-5 status-card border-0 shadow-lg text-center" id="statusCard">
+            <h6 class="text-uppercase text-muted fw-bold mb-4 letter-spacing-1">Your Ticket #</h6>
+            <div class="queue-number-display mb-4" id="queueNumberDisplay">{{ ticket.queue_number }}</div>
+            <p class="h4 mb-4 fw-medium text-dark">{{ ticket.patient_name }}</p>
+
+            <div id="statusBadgeContainer" class="mb-4 d-flex justify-content-center align-items-center">
+                <span class="badge rounded-pill status-badge-lg shadow-sm" id="statusBadge">
+                    {{ ticket.status }}
+                </span>
+            </div>
+
+            <hr class="my-4 opacity-10">
+
+            <div class="d-grid gap-3">
+                <a href="https://wa.me/{{ ticket.phone_number }}?text=Hello%20{{ ticket.patient_name | urlencode }},%20your%20medicine%20at%20Que-Pharma%20is%20ready!"
+                    id="whatsappBtn" class="btn btn-outline-success btn-lg rounded-pill" target="_blank" {% if not
+                    ticket.phone_number %}style="display:none;" {% endif %}>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor"
+                        class="bi bi-whatsapp me-2" viewBox="0 0 16 16">
+                        <path
+                            d="M13.601 2.326A7.854 7.854 0 0 0 7.994 0C3.627 0 .068 3.558.064 7.926c0 1.399.366 2.76 1.057 3.965L0 16l4.204-1.102a7.933 7.933 0 0 0 3.79.965h.004c4.368 0 7.926-3.558 7.93-7.93A7.898 7.898 0 0 0 13.6 2.326zM7.994 14.521a6.573 6.573 0 0 1-3.356-.92l-.24-.144-2.494.654.666-2.433-.156-.251a6.56 6.56 0 0 1-1.007-3.505c0-3.626 2.957-6.584 6.591-6.584a6.56 6.56 0 0 1 4.66 1.931 6.557 6.557 0 0 1 1.928 4.66c-.004 3.639-2.961 6.592-6.592 6.592zm3.615-4.934c-.197-.099-1.17-.578-1.353-.646-.182-.065-.315-.099-.445.099-.133.197-.513.646-.627.775-.114.133-.232.148-.43.05-.197-.1-.836-.308-1.592-.985-.59-.525-.985-1.175-1.103-1.372-.114-.198-.011-.304.088-.403.087-.088.197-.232.296-.346.1-.114.133-.198.198-.33.065-.134.034-.248-.015-.347-.05-.099-.445-1.076-.612-1.47-.16-.389-.323-.335-.445-.34-.114-.007-.247-.007-.38-.007a.729.729 0 0 0-.529.247c-.182.198-.691.677-.691 1.654 0 .977.71 1.916.81 2.049.098.133 1.394 2.132 3.383 2.992.47.205.84.326 1.129.418.475.152.904.129 1.246.08.38-.058 1.171-.48 1.338-.943.164-.464.164-.86.114-.943-.049-.084-.182-.133-.38-.232z" />
+                    </svg>
+                    Notify me via WhatsApp
+                </a>
+                <p class="small text-muted mb-0">Polling for updates... (<span id="countdown">10</span>s)</p>
+            </div>
+        </div>
+
+        <div class="mt-4 p-3 bg-white rounded-4 shadow-sm">
+            <p class="small text-muted mb-0">Please keep this page open. We'll notify you when your medicine is ready.
+            </p>
+        </div>
+    </div>
+</div>
+
+<audio id="notificationSound" src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3"
+    preload="auto"></audio>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    const ticketId = "{{ ticket.id }}";
+    const statusBadge = document.getElementById('statusBadge');
+    const body = document.body;
+    const notificationSound = document.getElementById('notificationSound');
+    const countdownEl = document.getElementById('countdown');
+    let lastStatus = "{{ ticket.status }}";
+    let countdown = 10;
+
+    function updateUI(status) {
+        statusBadge.textContent = status;
+
+        if (status === 'Preparing') {
+            statusBadge.className = 'badge bg-warning text-dark rounded-pill status-badge-lg shadow-sm';
+            body.classList.remove('status-ready');
+        } else if (status === 'Ready') {
+            statusBadge.className = 'badge bg-success rounded-pill status-badge-lg shadow-sm animate__animated animate__pulse animate__infinite';
+            body.classList.add('status-ready');
+
+            if (lastStatus !== 'Ready') {
+                notificationSound.play().catch(e => console.log('Autoplay blocked:', e));
+                if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
+            }
+        } else if (status === 'Collected') {
+            statusBadge.className = 'badge bg-secondary rounded-pill status-badge-lg shadow-sm';
+            body.classList.remove('status-ready');
+        }
+
+        lastStatus = status;
+    }
+
+    function checkStatus() {
+        countdown = 10;
+        fetch(`/api/check-status/${ticketId}/`)
+            .then(res => res.json())
+            .then(data => {
+                updateUI(data.status);
+            })
+            .catch(err => console.error('Status check failed:', err));
+    }
+
+    setInterval(() => {
+        countdown--;
+        if (countdown < 0) countdown = 10;
+        countdownEl.textContent = countdown;
+    }, 1000);
+
+    updateUI(lastStatus);
+    setInterval(checkStatus, 10000);
+</script>
+{% endblock %}
