@@ -8,6 +8,9 @@ from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from .models import PrescriptionTicket
 from .utils import produce_qr_code
 
+def patient_portal(request):
+    return render(request, 'patient_portal.html')
+
 @login_required
 def dashboard(request):
     return render(request, 'dashboard.html')
@@ -97,6 +100,34 @@ def api_update_status(request, ticket_id):
             return JsonResponse({'status': 'success'})
         except Exception as e:
             return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
+    return JsonResponse({'status': 'error'}, status=400)
+
+@csrf_exempt
+def api_lookup_ticket(request):
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            phone = data.get('phone_number')
+            # Look for most recent ticket for this phone number that isn't collected
+            ticket = PrescriptionTicket.objects.filter(phone_number__icontains=phone).exclude(status='Collected').order_by('-created_at').first()
+            if ticket:
+                return JsonResponse({'status': 'success', 'id': str(ticket.id)})
+            return JsonResponse({'status': 'not_found'}, status=404)
+        except Exception as e:
+            return JsonResponse({'status': 'error'}, status=400)
+    return JsonResponse({'status': 'error'}, status=400)
+
+@csrf_exempt
+def api_update_contact(request, ticket_id):
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            ticket = get_object_or_404(PrescriptionTicket, id=ticket_id)
+            ticket.phone_number = data.get('phone_number')
+            ticket.save()
+            return JsonResponse({'status': 'success'})
+        except Exception as e:
+            return JsonResponse({'status': 'error'}, status=400)
     return JsonResponse({'status': 'error'}, status=400)
 
 def generate_qr(request, ticket_id):

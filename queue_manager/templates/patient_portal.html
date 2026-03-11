@@ -1,0 +1,111 @@
+{% extends 'base.html' %}
+
+{% block extra_css %}
+<style>
+    .lookup-container {
+        min-height: 85vh;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+    }
+    .lookup-card {
+        max-width: 450px;
+        width: 100%;
+        padding: 4rem 3rem;
+        text-align: center;
+    }
+    .hero-gradient-text {
+        background: linear-gradient(135deg, var(--accent-primary), var(--accent-purple));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        font-weight: 800;
+        font-size: 2.5rem;
+    }
+    .input-group-modern {
+        background: var(--card-glass);
+        border: 1px solid var(--card-border);
+        border-radius: 100px;
+        padding: 5px 5px 5px 20px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        transition: all 0.3s ease;
+    }
+    .input-group-modern:focus-within {
+        border-color: var(--accent-primary);
+        box-shadow: 0 0 20px rgba(59, 130, 246, 0.2);
+    }
+    .input-group-modern input {
+        background: transparent;
+        border: none;
+        color: var(--text-main);
+        flex: 1;
+        outline: none;
+        font-weight: 500;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="lookup-container reveal">
+    <div class="lookup-card glass-card">
+        <div class="mb-4">
+            <h1 class="hero-gradient-text">Track Your Status</h1>
+            <p class="text-muted-modern mt-2">Enter your phone number to see if your prescription is ready.</p>
+        </div>
+
+        <form id="lookupForm" class="mt-5">
+            {% csrf_token %}
+            <div class="mb-4">
+                <div class="input-group-modern">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="text-muted-modern">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                    </svg>
+                    <input type="text" id="phoneNumber" placeholder="+60123456789" required>
+                    <button type="submit" class="btn-modern btn-primary-modern py-2 px-4 shadow-sm" style="padding: 0.6rem 2rem !important;">
+                        Find Ticket
+                    </button>
+                </div>
+            </div>
+            <div id="errorMsg" class="text-danger small mt-2" style="display: none;">Ticket not found. Please check your number or wait for the pharmacist.</div>
+        </form>
+
+        <div class="mt-5 pt-4 border-top border-secondary opacity-25">
+            <p class="small text-muted-modern mb-0">Pharmacist portal? <a href="{% url 'login' %}" class="text-white text-decoration-none fw-bold">Login here</a></p>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.getElementById('lookupForm').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const phone = document.getElementById('phoneNumber').value;
+        const errorMsg = document.getElementById('errorMsg');
+        
+        errorMsg.style.display = 'none';
+
+        fetch('/api/lookup-ticket/', {
+            method: 'POST',
+            body: JSON.stringify({ phone_number: phone }),
+            headers: { 
+                'Content-Type': 'application/json',
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+            }
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.status === 'success') {
+                window.location.href = `/track/${data.id}/`;
+            } else {
+                errorMsg.style.display = 'block';
+            }
+        })
+        .catch(() => {
+            errorMsg.style.display = 'block';
+        });
+    });
+</script>
+{% endblock %}
