@@ -2,9 +2,9 @@
 
 {% block extra_css %}
 <style>
-    .status-badge-preparing { background: rgba(245, 158, 11, 0.1); color: #F59E0B; border: 1px solid rgba(245, 158, 11, 0.2); }
-    .status-badge-ready { background: rgba(16, 185, 129, 0.1); color: #10B981; border: 1px solid rgba(16, 185, 129, 0.2); }
-    .status-badge-collected { background: rgba(156, 163, 175, 0.1); color: #9CA3AF; border: 1px solid rgba(156, 163, 175, 0.2); }
+    .status-badge-preparing { background: rgba(245, 158, 11, 0.15); color: #F59E0B; border: 1px solid rgba(245, 158, 11, 0.3); }
+    .status-badge-ready { background: rgba(16, 185, 129, 0.15); color: #10B981; border: 1px solid rgba(16, 185, 129, 0.3); }
+    .status-badge-collected { background: rgba(156, 163, 175, 0.15); color: #9CA3AF; border: 1px solid rgba(156, 163, 175, 0.3); }
 
     .table { color: var(--text-main); }
     .table thead th { 
@@ -20,20 +20,23 @@
         padding: 1.5rem 1rem; 
         border-bottom: 1px solid var(--card-border);
         background: transparent;
+        color: var(--text-main); /* Explicitly set color for visibility */
     }
     .table-hover tbody tr:hover td {
-        background: rgba(255, 255, 255, 0.02);
+        background: rgba(var(--accent-primary-rgb, 59, 130, 246), 0.05);
     }
     
     .modal-content {
-        background: rgba(17, 24, 39, 0.95);
+        background: var(--bg-deep);
         backdrop-filter: blur(20px);
         border: 1px solid var(--card-border);
         border-radius: 32px;
+        color: var(--text-main);
     }
     .modal-header { border-bottom: 1px solid var(--card-border); padding: 2rem; }
     .modal-body { padding: 2rem; }
-    .btn-close { filter: invert(1); }
+    
+    [data-bs-theme="dark"] .btn-close { filter: invert(1); }
 
     .action-btn {
         width: 40px;
@@ -45,11 +48,19 @@
         transition: all 0.2s;
         background: var(--card-glass);
         border: 1px solid var(--card-border);
-        color: white;
+        color: var(--text-main);
     }
     .action-btn:hover {
         background: var(--accent-primary);
+        color: white;
         transform: scale(1.1);
+    }
+
+    /* Explicitly highlight patient name for accessibility */
+    .patient-name-hl {
+        color: var(--text-main);
+        font-weight: 600;
+        font-size: 1rem;
     }
 </style>
 {% endblock %}
@@ -97,7 +108,6 @@
     </div>
 </div>
 
-<!-- Add Patient Modal remains mostly same but with updated styling -->
 <div class="modal fade" id="addPatientModal" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
@@ -124,16 +134,15 @@
     </div>
 </div>
 
-<!-- QR Modal -->
 <div class="modal fade" id="qrModal" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered modal-sm">
         <div class="modal-content text-center">
             <div class="modal-body p-5">
                 <h5 class="fw-bold mb-4">Tracking QR</h5>
-                <div class="p-3 bg-white rounded-4 mb-4 d-inline-block">
+                <div class="p-3 bg-white rounded-4 mb-4 d-inline-block shadow-sm">
                     <img id="qrImage" src="" class="img-fluid" style="width: 180px;">
                 </div>
-                <p class="small text-muted-modern mb-0" id="qrPatientName"></p>
+                <p class="small fw-bold text-main mb-0" id="qrPatientName"></p>
                 <div class="mt-4">
                     <button type="button" class="btn-modern btn-outline-modern w-100" data-bs-dismiss="modal">Close</button>
                 </div>
@@ -172,8 +181,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
                     const row = `
                         <tr class="animate__animated animate__fadeIn">
-                            <td><span class="fw-bold text-accent" style="color:var(--accent-primary)">#${ticket.queue_number}</span></td>
-                            <td><span class="fw-semibold">${ticket.patient_name}</span></td>
+                            <td><span class="fw-bold" style="color:var(--accent-primary)">#${ticket.queue_number}</span></td>
+                            <td><span class="patient-name-hl">${ticket.patient_name}</span></td>
                             <td><span class="badge badge-modern ${statusClass}">${ticket.status}</span></td>
                             <td><span class="text-muted-modern small">${ticket.pharmacist}</span></td>
                             <td><span class="text-muted-modern small">${ticket.created_at}</span></td>

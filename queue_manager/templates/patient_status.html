@@ -20,7 +20,7 @@
         width: 220px;
         height: 220px;
         border-radius: 50%;
-        background: linear-gradient(135deg, rgba(255,255,255,0.05), rgba(255,255,255,0.02));
+        background: var(--card-glass);
         border: 2px solid var(--card-border);
         display: flex;
         flex-direction: column;
@@ -35,7 +35,7 @@
         font-size: 84px;
         font-weight: 800;
         line-height: 1;
-        background: linear-gradient(135deg, #fff, #99AABB);
+        background: linear-gradient(135deg, var(--text-main), var(--accent-primary));
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
     }
@@ -72,7 +72,7 @@
 
     .whatsapp-btn-modern {
         background: #25D366;
-        color: white;
+        color: white !important;
         text-decoration: none;
         padding: 1rem 2rem;
         border-radius: 100px;
@@ -87,11 +87,14 @@
     .whatsapp-btn-modern:hover {
         transform: translateY(-2px);
         box-shadow: 0 8px 25px rgba(37, 211, 102, 0.4);
-        color: white;
     }
 
     #statusBadgeContainer {
         min-height: 40px;
+    }
+
+    #countdown {
+        color: var(--text-main);
     }
 </style>
 {% endblock %}
@@ -104,7 +107,7 @@
             <div class="queue-num" id="queueNumberDisplay">{{ ticket.queue_number }}</div>
         </div>
 
-        <h2 class="h3 fw-bold mb-2">{{ ticket.patient_name }}</h2>
+        <h2 class="h3 fw-bold mb-2" style="color: var(--text-main);">{{ ticket.patient_name }}</h2>
         
         <div id="statusBadgeContainer" class="mb-5 d-flex justify-content-center align-items-center">
             <div class="d-flex align-items-center">
@@ -122,7 +125,7 @@
                 Notify me on WhatsApp
             </a>
             <div class="mt-4">
-                <p class="small text-muted-modern">Refreshing in <span id="countdown" class="fw-bold text-white">10</span>s</p>
+                <p class="small text-muted-modern">Refreshing in <span id="countdown" class="fw-bold">10</span>s</p>
             </div>
         </div>
     </div>
