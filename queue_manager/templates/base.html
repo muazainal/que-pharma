@@ -164,14 +164,6 @@
             background: var(--card-glass);
         }
 
-        /* Nav right classes */
-        .auth-nav-link {
-            position: absolute;
-            top: 2rem;
-            right: 2rem;
-            z-index: 10;
-        }
-
         .reveal {
             animation: fadeIn 0.8s ease-out forwards;
         }
@@ -203,7 +195,15 @@
                 <a href="{% url 'logout' %}" class="btn-modern btn-outline-modern py-2 px-4 shadow-sm">
                     Logout
                 </a>
-                {% elif not '/login/' in request.path and not '/signup/' in request.path %}
+                {% elif '/login/' in request.path %}
+                <a href="{% url 'signup' %}" class="btn-modern btn-outline-modern py-2 px-4">
+                    Sign Up
+                </a>
+                {% elif '/signup/' in request.path %}
+                <a href="{% url 'login' %}" class="btn-modern btn-outline-modern py-2 px-4">
+                    Log In
+                </a>
+                {% else %}
                 <a href="{% url 'login' %}" class="btn-modern btn-primary-modern py-2 px-4">
                     Pharmacist Login
                 </a>

@@ -1,28 +1,6 @@
 {% extends 'base.html' %}
 
-{% block extra_css %}
-<style>
-    .auth-bg-gradient {
-        position: fixed;
-        top: 0; left: 0; right: 0; bottom: 0;
-        z-index: -1;
-        opacity: 0.1;
-        background: radial-gradient(circle at 70% 20%, var(--accent-primary) 0, transparent 40%);
-    }
-</style>
-{% endblock %}
-
 {% block content %}
-<div class="auth-bg-gradient"></div>
-
-<!-- Top Right Link -->
-<div class="auth-nav-link d-none d-md-block">
-    <span class="text-muted-modern small me-2">New pharmacist?</span>
-    <a href="{% url 'signup' %}" class="btn-modern btn-outline-modern px-4 py-2 small fw-bold text-decoration-none">
-        Register Here
-    </a>
-</div>
-
 <div class="row justify-content-center pt-5 reveal">
     <div class="col-md-5">
         <div class="glass-card p-5">
@@ -53,7 +31,7 @@
                 </div>
             </form>
             
-            <div class="text-center mt-4 d-md-none">
+            <div class="text-center mt-4">
                 <p class="small text-muted-modern mb-0">
                     New pharmacist? <a href="{% url 'signup' %}" class="fw-bold text-decoration-none border-bottom border-secondary border-2 pb-1">Create an account</a>
                 </p>
