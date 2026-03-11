@@ -7,7 +7,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.contrib import messages
 from django.conf import settings
-from .models import PrescriptionTicket
+from .models import PrescriptionTicket, PharmacistProfile
 from .utils import produce_qr_code
 
 def patient_portal(request):
@@ -21,14 +21,25 @@ def signup_view(request):
     if request.method == 'POST':
         form = UserCreationForm(request.POST)
         pharma_secret = request.POST.get('pharma_secret')
+        employee_id = request.POST.get('employee_id')
         
         # Verify Registration Key
         if pharma_secret != settings.PHARMACY_REGISTRATION_KEY:
-            messages.error(request, 'Invalid Pharmacy Secret Key. You do not have permission to create an account.')
+            messages.error(request, 'Invalid Pharmacy Secret Key.')
+            return render(request, 'registration/signup.html', {'form': form})
+        
+        # Verify Employee ID uniqueness
+        if PharmacistProfile.objects.filter(employee_id=employee_id).exists():
+            messages.error(request, 'This Employee ID is already registered.')
             return render(request, 'registration/signup.html', {'form': form})
             
         if form.is_valid():
             user = form.save()
+            # Update the profile created by the signal
+            profile = user.profile
+            profile.employee_id = employee_id
+            profile.save()
+            
             login(request, user)
             return redirect('dashboard')
     else:
@@ -58,14 +69,24 @@ def api_ticket_list(request):
     tickets = PrescriptionTicket.objects.exclude(status='Collected').order_by('created_at')
     data = []
     for t in tickets:
+        pharmacist_name = 'Unknown'
+        if t.updated_by:
+            pharmacist_name = t.updated_by.username
+            if hasattr(t.updated_by, 'profile'):
+                pharmacist_name = f"{t.updated_by.username} ({t.updated_by.profile.employee_id})"
+        elif t.created_by:
+            pharmacist_name = t.created_by.username
+            if hasattr(t.created_by, 'profile'):
+                pharmacist_name = f"{t.created_by.username} ({t.created_by.profile.employee_id})"
+
         data.append({
             'id': str(t.id),
             'queue_number': t.queue_number,
             'patient_name': t.patient_name,
-            'phone_number': t.phone_number, # Added phone number here
+            'phone_number': t.phone_number,
             'status': t.status,
             'created_at': t.created_at.strftime('%H:%M:%S'),
-            'pharmacist': t.updated_by.username if t.updated_by else (t.created_by.username if t.created_by else 'Unknown')
+            'pharmacist': pharmacist_name
         })
     return JsonResponse({'tickets': data})
 

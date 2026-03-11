@@ -55,6 +55,12 @@
                     <div class="small text-muted-modern mt-2" style="font-size: 0.75rem;">Your pharmacy's private registration code.</div>
                 </div>
 
+                <!-- Employee ID Section -->
+                <div class="mb-4">
+                    <label class="form-label small fw-semibold text-muted-modern">Employee ID Number</label>
+                    <input type="text" name="employee_id" class="form-control" placeholder="e.g. PH-1002" required>
+                </div>
+
                 {% for field in form %}
                 <div class="mb-4">
                     <label class="form-label small fw-semibold text-muted-modern">{{ field.label }}</label>

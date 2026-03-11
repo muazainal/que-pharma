@@ -217,7 +217,7 @@
 
                 {% if user.is_authenticated %}
                 <div class="d-none d-sm-flex flex-column text-end me-2 ms-2">
-                    <span class="small text-muted-modern fw-medium">Pharmacist</span>
+                    <span class="small text-muted-modern fw-medium">Pharmacist [{{ user.profile.employee_id }}]</span>
                     <span class="small fw-bold">{{ user.username }}</span>
                 </div>
                 <!-- Link to Dashboard -->
