@@ -1,6 +1,37 @@
 {% extends 'base.html' %}
 
+{% block extra_css %}
+<style>
+    .strength-meter {
+        height: 6px;
+        width: 100%;
+        background-color: var(--card-border);
+        border-radius: 10px;
+        margin-top: 8px;
+        overflow: hidden;
+    }
+    .strength-bar {
+        height: 100%;
+        width: 0%;
+        transition: all 0.3s ease;
+    }
+    .strength-text {
+        font-size: 0.75rem;
+        margin-top: 4px;
+        font-weight: 500;
+    }
+</style>
+{% endblock %}
+
 {% block content %}
+<!-- Top Right Link -->
+<div class="auth-nav-link d-none d-md-block" style="top: 2rem; right: 2rem; position: absolute;">
+    <span class="text-muted-modern small me-2">Already registered?</span>
+    <a href="{% url 'login' %}" class="btn-modern btn-outline-modern px-4 py-2 small fw-bold text-decoration-none">
+        Log In
+    </a>
+</div>
+
 <div class="row justify-content-center pt-5 reveal">
     <div class="col-md-5">
         <div class="glass-card p-5">
@@ -16,8 +47,17 @@
                     <label class="form-label small fw-semibold text-muted-modern">{{ field.label }}</label>
                     <input type="{{ field.field.widget.input_type|default:'text' }}" 
                            name="{{ field.name }}"
+                           id="id_{{ field.name }}"
                            class="form-control {% if field.errors %}is-invalid{% endif %}"
                            placeholder="Enter {{ field.label|lower }}">
+                    
+                    {% if "password" in field.label|lower and not "confirmation" in field.label|lower %}
+                    <div class="strength-meter">
+                        <div id="strengthBar" class="strength-bar"></div>
+                    </div>
+                    <div id="strengthText" class="strength-text text-muted-modern">Enter password</div>
+                    {% endif %}
+
                     {% if field.help_text %}
                     <div class="small text-muted-modern mt-1" style="font-size: 0.7rem;">{{ field.help_text }}</div>
                     {% endif %}
@@ -31,12 +71,46 @@
                     <button type="submit" class="btn-modern btn-primary-modern py-3">
                         Register Account
                     </button>
-                    <p class="small text-muted-modern text-center mt-4">
-                        Already have an account? <a href="{% url 'login' %}" class="text-white fw-bold text-decoration-none">Sign In</a>
+                    <p class="small text-muted-modern text-center mt-4 d-md-none">
+                        Already have an account? <a href="{% url 'login' %}" class="fw-bold text-decoration-none border-bottom border-secondary border-2 pb-1">Sign In</a>
                     </p>
                 </div>
             </form>
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    const passwordInput = document.querySelector('input[type="password"]');
+    if (passwordInput && !passwordInput.name.includes('confirm')) {
+        const strengthBar = document.getElementById('strengthBar');
+        const strengthText = document.getElementById('strengthText');
+
+        passwordInput.addEventListener('input', () => {
+            const val = passwordInput.value;
+            let score = 0;
+            if (val.length > 5) score++;
+            if (val.length > 8) score++;
+            if (/[A-Z]/.test(val)) score++;
+            if (/[0-9]/.test(val)) score++;
+            if (/[^A-Za-z0-9]/.test(val)) score++;
+
+            let color = '#ef4444';
+            let label = 'Weak';
+            let width = '20%';
+
+            if (score === 0) { width = '0%'; label = 'Enter password'; color = 'var(--text-muted)'; }
+            else if (score < 3) { width = '33%'; color = '#f97316'; label = 'Medium'; }
+            else if (score < 4) { width = '66%'; color = '#eab308'; label = 'Strong'; }
+            else { width = '100%'; color = '#10b981'; label = 'Very Strong'; }
+
+            strengthBar.style.width = width;
+            strengthBar.style.backgroundColor = color;
+            strengthText.textContent = label;
+            strengthText.style.color = color;
+        });
+    }
+</script>
 {% endblock %}
