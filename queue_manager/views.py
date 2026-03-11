@@ -1,3 +1,9 @@
+"""
+Que-Pharma Application Views
+Handles routing logic for both the Patient Portal and Pharmacist Dashboard.
+Includes a suite of JSON APIs for real-time frontend interaction.
+"""
+
 import json
 from django.shortcuts import render, get_object_or_404, redirect
 from django.http import JsonResponse, HttpResponse
@@ -10,32 +16,49 @@ from django.conf import settings
 from .models import PrescriptionTicket, PharmacistProfile
 from .utils import produce_qr_code
 
+# -----------------------------------------------------------------------------
+# PUBLIC PORTAL VIEWS (Patients)
+# -----------------------------------------------------------------------------
+
 def patient_portal(request):
+    """Renders the main entry point where patients can look up their tickets."""
     return render(request, 'patient_portal.html')
 
-@login_required
-def dashboard(request):
-    return render(request, 'dashboard.html')
+def track_ticket(request, ticket_id):
+    """
+    Renders the individual tracking page for a specific prescription.
+    Patients use this to monitor real-time status updates.
+    """
+    ticket = get_object_or_404(PrescriptionTicket, id=ticket_id)
+    return render(request, 'patient_status.html', {'ticket': ticket})
+
+# -----------------------------------------------------------------------------
+# AUTHENTICATION VIEWS (Pharmacists)
+# -----------------------------------------------------------------------------
 
 def signup_view(request):
+    """
+    Handles secure pharmacist registration.
+    Requires a master Pharmacy Secret Key and a unique Employee ID for accountability.
+    """
     if request.method == 'POST':
         form = UserCreationForm(request.POST)
         pharma_secret = request.POST.get('pharma_secret')
         employee_id = request.POST.get('employee_id')
         
-        # Verify Registration Key
+        # Security Guard: Only authorized personnel with the master key can join
         if pharma_secret != settings.PHARMACY_REGISTRATION_KEY:
             messages.error(request, 'Invalid Pharmacy Secret Key.')
             return render(request, 'registration/signup.html', {'form': form})
         
-        # Verify Employee ID uniqueness
+        # ID Validation: Prevent duplicate staff identifiers
         if PharmacistProfile.objects.filter(employee_id=employee_id).exists():
             messages.error(request, 'This Employee ID is already registered.')
             return render(request, 'registration/signup.html', {'form': form})
             
         if form.is_valid():
             user = form.save()
-            # Update the profile created by the signal
+            # Link the new Employee ID to the user's staff profile
             profile = user.profile
             profile.employee_id = employee_id
             profile.save()
@@ -47,6 +70,7 @@ def signup_view(request):
     return render(request, 'registration/signup.html', {'form': form})
 
 def login_view(request):
+    """Standard secure login for existing pharmacists."""
     if request.method == 'POST':
         form = AuthenticationForm(data=request.POST)
         if form.is_valid():
@@ -58,26 +82,35 @@ def login_view(request):
     return render(request, 'registration/login.html', {'form': form})
 
 def logout_view(request):
+    """Terminating the staff session and redirecting to the login gate."""
     logout(request)
     return redirect('login')
 
-def track_ticket(request, ticket_id):
-    ticket = get_object_or_404(PrescriptionTicket, id=ticket_id)
-    return render(request, 'patient_status.html', {'ticket': ticket})
+# -----------------------------------------------------------------------------
+# MANAGEMENT VIEWS (Pharmacist Dashboard)
+# -----------------------------------------------------------------------------
+
+@login_required
+def dashboard(request):
+    """The central command hub for pharmacists to manage the prescription queue."""
+    return render(request, 'dashboard.html')
+
+# -----------------------------------------------------------------------------
+# JSON API ENDPOINTS (Real-time interactions)
+# -----------------------------------------------------------------------------
 
 def api_ticket_list(request):
+    """Returns a list of all active (non-collected) tickets for the dashboard."""
     tickets = PrescriptionTicket.objects.exclude(status='Collected').order_by('created_at')
     data = []
     for t in tickets:
+        # Determine the name and ID of the pharmacist who last touched the ticket
         pharmacist_name = 'Unknown'
-        if t.updated_by:
-            pharmacist_name = t.updated_by.username
-            if hasattr(t.updated_by, 'profile'):
-                pharmacist_name = f"{t.updated_by.username} ({t.updated_by.profile.employee_id})"
-        elif t.created_by:
-            pharmacist_name = t.created_by.username
-            if hasattr(t.created_by, 'profile'):
-                pharmacist_name = f"{t.created_by.username} ({t.created_by.profile.employee_id})"
+        target_user = t.updated_by or t.created_by
+        if target_user:
+            pharmacist_name = target_user.username
+            if hasattr(target_user, 'profile'):
+                pharmacist_name = f"{target_user.username} ({target_user.profile.employee_id})"
 
         data.append({
             'id': str(t.id),
@@ -91,6 +124,7 @@ def api_ticket_list(request):
     return JsonResponse({'tickets': data})
 
 def api_check_status(request, ticket_id):
+    """Lightweight polling endpoint for patient tracking pages."""
     ticket = get_object_or_404(PrescriptionTicket, id=ticket_id)
     return JsonResponse({
         'id': str(ticket.id),
@@ -101,9 +135,11 @@ def api_check_status(request, ticket_id):
 
 @csrf_exempt
 def api_create_ticket(request):
+    """Staff API: Creates a new prescription entry and assigns a queue number."""
     if request.method == 'POST':
         try:
             data = json.loads(request.body)
+            # Find the next sequential queue number
             last_ticket = PrescriptionTicket.objects.order_by('-queue_number').first()
             queue_num = (last_ticket.queue_number + 1) if last_ticket else 1
             
@@ -120,6 +156,7 @@ def api_create_ticket(request):
 
 @csrf_exempt
 def api_update_status(request, ticket_id):
+    """Staff API: Transition a ticket between 'Preparing', 'Ready', and 'Collected'."""
     if request.method == 'POST':
         try:
             data = json.loads(request.body)
@@ -135,10 +172,12 @@ def api_update_status(request, ticket_id):
 
 @csrf_exempt
 def api_lookup_ticket(request):
+    """Patient API: Searches for active tickets by phone number."""
     if request.method == 'POST':
         try:
             data = json.loads(request.body)
             phone = data.get('phone_number')
+            # Look for recent active tickets associated with this phone number
             ticket = PrescriptionTicket.objects.filter(phone_number__icontains=phone).exclude(status='Collected').order_by('-created_at').first()
             if ticket:
                 return JsonResponse({'status': 'success', 'id': str(ticket.id)})
@@ -149,6 +188,7 @@ def api_lookup_ticket(request):
 
 @csrf_exempt
 def api_update_contact(request, ticket_id):
+    """Patient API: Allows patients to voluntarily link their phone number to an existing ticket."""
     if request.method == 'POST':
         try:
             data = json.loads(request.body)
@@ -161,6 +201,7 @@ def api_update_contact(request, ticket_id):
     return JsonResponse({'status': 'error'}, status=400)
 
 def generate_qr(request, ticket_id):
+    """Utility View: Generates a QR code image that redirects to the ticket's tracking page."""
     ticket = get_object_or_404(PrescriptionTicket, id=ticket_id)
     track_url = request.build_absolute_uri(f'/track/{ticket.id}/')
     qr_image_data = produce_qr_code(track_url)

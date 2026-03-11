@@ -1,26 +1,7 @@
 {% extends 'base.html' %}
 
 {% block extra_css %}
-<style>
-    .strength-meter {
-        height: 6px;
-        width: 100%;
-        background-color: var(--card-border);
-        border-radius: 10px;
-        margin-top: 8px;
-        overflow: hidden;
-    }
-    .strength-bar {
-        height: 100%;
-        width: 0%;
-        transition: all 0.3s ease;
-    }
-    .strength-text {
-        font-size: 0.75rem;
-        margin-top: 4px;
-        font-weight: 500;
-    }
-</style>
+<!-- Authentication styles are centralized in styles.css -->
 {% endblock %}
 
 {% block content %}
@@ -32,6 +13,7 @@
                 <p class="text-muted-modern">Create your pharmacist account</p>
             </div>
 
+            <!-- Error Feedback: Displayed for invalid secret keys or unique constraints (e.g. Employee ID) -->
             {% if messages %}
             <div class="mb-4">
                 {% for message in messages %}
@@ -45,8 +27,8 @@
             <form method="post" class="needs-validation">
                 {% csrf_token %}
 
-                <!-- Security Secret Key -->
-                <div class="mb-5 p-4 rounded-4" style="background: rgba(var(--accent-primary-rgb, 59, 130, 246), 0.1); border: 1px dashed var(--accent-primary)">
+                <!-- Security: Mandatory Gateway Secret Key -->
+                <div class="security-key-box">
                     <label class="form-label d-flex justify-content-between align-items-center">
                         <span class="small fw-bold text-accent">Pharmacy Secret Key</span>
                         <span class="badge bg-danger">Required</span>
@@ -55,12 +37,13 @@
                     <div class="small text-muted-modern mt-2" style="font-size: 0.75rem;">Your pharmacy's private registration code.</div>
                 </div>
 
-                <!-- Employee ID Section -->
+                <!-- Identity: Unique Workplace Identification -->
                 <div class="mb-4">
                     <label class="form-label small fw-semibold text-muted-modern">Employee ID Number</label>
                     <input type="text" name="employee_id" class="form-control" placeholder="e.g. PH-1002" required>
                 </div>
 
+                <!-- Django Standard Form Rendering -->
                 {% for field in form %}
                 <div class="mb-4">
                     <label class="form-label small fw-semibold text-muted-modern">{{ field.label }}</label>
@@ -70,6 +53,7 @@
                            class="form-control {% if field.errors %}is-invalid{% endif %}"
                            placeholder="Enter {{ field.label|lower }}">
                     
+                    <!-- Integrated Password Strength Meter: Logic handled by auth.js -->
                     {% if "password" in field.label|lower and not "confirmation" in field.label|lower %}
                     <div class="strength-meter">
                         <div id="strengthBar" class="strength-bar"></div>
@@ -80,6 +64,8 @@
                     {% if field.help_text %}
                     <div class="small text-muted-modern mt-1" style="font-size: 0.7rem;">{{ field.help_text }}</div>
                     {% endif %}
+                    
+                    <!-- Error display for specific form fields -->
                     {% for error in field.errors %}
                     <div class="invalid-feedback small">{{ error }}</div>
                     {% endfor %}
@@ -90,6 +76,7 @@
                     <button type="submit" class="btn-modern btn-primary-modern py-3">
                         Register Account
                     </button>
+                    <!-- Redirect back to login -->
                     <p class="small text-muted-modern text-center mt-4">
                         Already have an account? <a href="{% url 'login' %}" class="fw-bold text-decoration-none border-bottom border-secondary border-2 pb-1">Sign In</a>
                     </p>
@@ -101,35 +88,6 @@
 {% endblock %}
 
 {% block extra_js %}
-<script>
-    const passwordInput = document.querySelector('input[type="password"]');
-    if (passwordInput && !passwordInput.name.includes('confirm')) {
-        const strengthBar = document.getElementById('strengthBar');
-        const strengthText = document.getElementById('strengthText');
-
-        passwordInput.addEventListener('input', () => {
-            const val = passwordInput.value;
-            let score = 0;
-            if (val.length > 5) score++;
-            if (val.length > 8) score++;
-            if (/[A-Z]/.test(val)) score++;
-            if (/[0-9]/.test(val)) score++;
-            if (/[^A-Za-z0-9]/.test(val)) score++;
-
-            let color = '#ef4444';
-            let label = 'Weak';
-            let width = '20%';
-
-            if (score === 0) { width = '0%'; label = 'Enter password'; color = 'var(--text-muted)'; }
-            else if (score < 3) { width = '33%'; color = '#f97316'; label = 'Medium'; }
-            else if (score < 4) { width = '66%'; color = '#eab308'; label = 'Strong'; }
-            else { width = '100%'; color = '#10b981'; label = 'Very Strong'; }
-
-            strengthBar.style.width = width;
-            strengthBar.style.backgroundColor = color;
-            strengthText.textContent = label;
-            strengthText.style.color = color;
-        });
-    }
-</script>
+<!-- Account security logic: Password strength and validation -->
+<script src="/static/js/auth.js"></script>
 {% endblock %}

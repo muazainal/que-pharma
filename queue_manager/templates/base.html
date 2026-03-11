@@ -4,223 +4,46 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Que-Pharma | Smart Retail Pharmacy Queue</title>
+    
     <!-- Bootstrap 5 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Google Fonts: Outfit & Inter -->
+    
+    <!-- Google Fonts: Outfit & Inter for high-end typography -->
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    
     <!-- Animate.css for smooth transitions -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
-    <style>
-        :root {
-            /* Dark Mode Defaults */
-            --bg-deep: #0B0F19;
-            --card-glass: rgba(255, 255, 255, 0.05);
-            --card-border: rgba(255, 255, 255, 0.1);
-            --accent-primary: #3B82F6;
-            --accent-purple: #8B5CF6;
-            --text-main: #F3F4F6;
-            --text-muted: #9CA3AF;
-            --navbar-bg: rgba(11, 15, 25, 0.7);
-        }
-
-        [data-bs-theme="light"] {
-            /* Light Mode Overrides */
-            --bg-deep: #F3F4F6;
-            --card-glass: rgba(0, 0, 0, 0.03);
-            --card-border: rgba(0, 0, 0, 0.1);
-            --text-main: #1F2937;
-            --text-muted: #6B7280;
-            --navbar-bg: rgba(243, 244, 246, 0.8);
-        }
-
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: var(--bg-deep);
-            color: var(--text-main);
-            min-height: 100vh;
-            overflow-x: hidden;
-            transition: background-color 0.3s ease, color 0.3s ease;
-        }
-
-        [data-bs-theme="dark"] body {
-            background-image: 
-                radial-gradient(at 0% 0%, rgba(59, 130, 246, 0.15) 0, transparent 50%),
-                radial-gradient(at 50% 100%, rgba(139, 92, 246, 0.1) 0, transparent 50%);
-        }
-
-        [data-bs-theme="light"] body {
-            background-image: 
-                radial-gradient(at 0% 0%, rgba(59, 130, 246, 0.05) 0, transparent 50%),
-                radial-gradient(at 50% 100%, rgba(139, 92, 246, 0.05) 0, transparent 50%);
-        }
-
-        h1, h2, h3, h4, h5, h6, .navbar-brand {
-            font-family: 'Outfit', sans-serif;
-            color: var(--text-main);
-        }
-
-        /* Glassmorphism Classes */
-        .glass-card {
-            background: var(--card-glass);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border: 1px solid var(--card-border);
-            border-radius: 24px;
-            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.1);
-        }
-
-        .navbar {
-            background: var(--navbar-bg);
-            backdrop-filter: blur(15px);
-            -webkit-backdrop-filter: blur(15px);
-            border-bottom: 1px solid var(--card-border);
-            padding: 1rem 0;
-            position: sticky;
-            top: 0;
-            z-index: 1000;
-        }
-
-        .navbar-brand {
-            font-weight: 700;
-            font-size: 1.5rem;
-            letter-spacing: -0.5px;
-            background: linear-gradient(135deg, var(--accent-primary), var(--accent-purple));
-            -webkit-background-clip: text;
-            background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-
-        .btn-modern {
-            padding: 0.8rem 2rem;
-            border-radius: 100px;
-            font-weight: 600;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            border: none;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-        }
-
-        .btn-primary-modern {
-            background: linear-gradient(135deg, var(--accent-primary), var(--accent-purple));
-            color: white !important;
-            box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
-        }
-
-        .btn-primary-modern:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(59, 130, 246, 0.4);
-        }
-
-        .btn-outline-modern {
-            background: transparent;
-            border: 1px solid var(--card-border);
-            color: var(--text-main);
-        }
-
-        .btn-outline-modern:hover {
-            background: var(--card-glass);
-            color: var(--text-main);
-        }
-
-        /* Form Controls */
-        .form-control {
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid var(--card-border);
-            border-radius: 14px;
-            color: var(--text-main);
-            padding: 0.8rem 1.2rem;
-        }
-
-        [data-bs-theme="light"] .form-control {
-            background: rgba(0, 0, 0, 0.02);
-            border: 1px solid rgba(0, 0, 0, 0.1);
-            color: #1F2937;
-        }
-
-        .form-control:focus {
-            background: rgba(255, 255, 255, 0.08);
-            border-color: var(--accent-primary);
-            color: var(--text-main);
-            box-shadow: none;
-        }
-
-        .text-muted-modern {
-            color: var(--text-muted);
-        }
-
-        /* Theme Toggle styles */
-        .theme-toggle {
-            cursor: pointer;
-            padding: 10px;
-            border-radius: 50%;
-            transition: background 0.3s;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: var(--text-main);
-        }
-        .theme-toggle:hover {
-            background: var(--card-glass);
-        }
-
-        /* Fixed Background Image */
-        .page-bg {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: -10;
-            background-image: url('/static/images/genomics_bg.png');
-            background-size: cover;
-            background-position: center;
-            opacity: 0.12;
-            transition: filter 0.6s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.6s ease;
-            pointer-events: none;
-        }
-
-        [data-bs-theme="dark"] .page-bg {
-            filter: invert(1);
-            opacity: 0.08;
-        }
-
-        .reveal {
-            animation: fadeIn 0.8s ease-out forwards;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-    </style>
+    
+    <!-- Custom Style System: Global Variables and Styles -->
+    <link rel="stylesheet" href="/static/css/styles.css">
+    
+    <!-- Hook for page-specific styles -->
     {% block extra_css %}{% endblock %}
-    <style>
-        body {
-            transition: background-color 0.4s ease, color 0.4s ease;
-        }
-    </style>
 </head>
 <body>
+    <!-- Fixed background visualization layer -->
     <div class="page-bg"></div>
+    
+    <!-- Main Smart Navigation -->
     <nav class="navbar navbar-expand-lg">
         <div class="container d-flex justify-content-between align-items-center">
             <a class="navbar-brand" href="/">Que-Pharma</a>
             <div class="d-flex align-items-center gap-2">
-                <!-- Theme Toggle -->
+                <!-- Theme Toggle: Switches between light and dark modes -->
                 <div class="theme-toggle" id="themeToggle" title="Toggle Light/Dark Mode">
                     <svg id="themeIcon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+                        <!-- Icon content updated dynamically by JS -->
                     </svg>
                 </div>
 
                 {% if user.is_authenticated %}
+                <!-- Pharmacist Info: Displays the currently logged-in user -->
                 <div class="d-none d-sm-flex flex-column text-end me-2 ms-2">
                     <span class="small text-muted-modern fw-medium">Pharmacist [{{ user.profile.employee_id }}]</span>
                     <span class="small fw-bold">{{ user.username }}</span>
                 </div>
-                <!-- Link to Dashboard -->
+                
+                <!-- Navigation links for pharmacists -->
                 {% if '/dashboard/' not in request.path %}
                 <a href="{% url 'dashboard' %}" class="btn-modern btn-primary-modern py-2 px-4 shadow-sm">
                     Dashboard
@@ -238,6 +61,7 @@
                     Log In
                 </a>
                 {% elif '/track/' not in request.path %}
+                <!-- Entry point for pharmacy staff from the public portal -->
                 <a href="{% url 'login' %}" class="btn-modern btn-primary-modern py-2 px-4">
                     Pharmacist Login
                 </a>
@@ -246,39 +70,18 @@
         </div>
     </nav>
 
+    <!-- Main Dynamic Content Container -->
     <div class="container">
         {% block content %}{% endblock %}
     </div>
 
-    <!-- Bootstrap 5 Bundle JS -->
+    <!-- Bootstrap 5 Bundle JS (Includes Popper) -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script>
-        // Theme Toggle Logic
-        const themeToggle = document.getElementById('themeToggle');
-        const themeIcon = document.getElementById('themeIcon');
-        const html = document.documentElement;
-
-        const updateIcon = (theme) => {
-            if (theme === 'light') {
-                themeIcon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 9H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />';
-            } else {
-                themeIcon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />';
-            }
-        };
-
-        const savedTheme = localStorage.getItem('theme') || 'dark';
-        html.setAttribute('data-bs-theme', savedTheme);
-        updateIcon(savedTheme);
-
-        themeToggle.addEventListener('click', () => {
-            const currentTheme = html.getAttribute('data-bs-theme');
-            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-            html.setAttribute('data-bs-theme', newTheme);
-            localStorage.setItem('theme', newTheme);
-            updateIcon(newTheme);
-        });
-    </script>
+    
+    <!-- Global UI Logic: Theme switching, transitions, and persistence -->
     <script src="/static/js/main.js"></script>
+    
+    <!-- Hook for page-specific scripts (e.g., dashboard real-time polling) -->
     {% block extra_js %}{% endblock %}
 </body>
 </html>

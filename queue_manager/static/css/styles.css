@@ -1,0 +1,482 @@
+/* 
+ * Que-Pharma Design System
+ * Global styles, variables, and common components
+ */
+
+:root {
+    /* Dark Mode Defaults - Inspired by high-end sleek interfaces */
+    --bg-deep: #0B0F19;
+    --card-glass: rgba(255, 255, 255, 0.05); /* Soft translucency */
+    --card-border: rgba(255, 255, 255, 0.1);
+    --accent-primary: #3B82F6; /* Vibrant blue */
+    --accent-purple: #8B5CF6;  /* Soft purple */
+    --text-main: #F3F4F6;
+    --text-muted: #9CA3AF;
+    --navbar-bg: rgba(11, 15, 25, 0.7);
+}
+
+/* Light Mode Overrides */
+[data-bs-theme="light"] {
+    --bg-deep: #F3F4F6;
+    --card-glass: rgba(0, 0, 0, 0.03);
+    --card-border: rgba(0, 0, 0, 0.1);
+    --text-main: #1F2937;
+    --text-muted: #6B7280;
+    --navbar-bg: rgba(243, 244, 246, 0.8);
+}
+
+/* Main Body Styling */
+body {
+    font-family: 'Inter', sans-serif;
+    background-color: var(--bg-deep);
+    color: var(--text-main);
+    min-height: 100vh;
+    overflow-x: hidden;
+    transition: background-color 0.4s ease, color 0.4s ease;
+}
+
+/* Custom background gradients for added depth */
+[data-bs-theme="dark"] body {
+    background-image: 
+        radial-gradient(at 0% 0%, rgba(59, 130, 246, 0.15) 0, transparent 50%),
+        radial-gradient(at 50% 100%, rgba(139, 92, 246, 0.1) 0, transparent 50%);
+}
+
+[data-bs-theme="light"] body {
+    background-image: 
+        radial-gradient(at 0% 0%, rgba(59, 130, 246, 0.05) 0, transparent 50%),
+        radial-gradient(at 50% 100%, rgba(139, 92, 246, 0.05) 0, transparent 50%);
+}
+
+/* Typography styles */
+h1, h2, h3, h4, h5, h6, .navbar-brand {
+    font-family: 'Outfit', sans-serif;
+    color: var(--text-main);
+}
+
+/* Glassmorphism Effect for cards and containers */
+.glass-card {
+    background: var(--card-glass);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid var(--card-border);
+    border-radius: 24px;
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.1);
+}
+
+/* Sticky Navbar with backdrop-blur */
+.navbar {
+    background: var(--navbar-bg);
+    backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px);
+    border-bottom: 1px solid var(--card-border);
+    padding: 1rem 0;
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+}
+
+.navbar-brand {
+    font-weight: 700;
+    font-size: 1.5rem;
+    letter-spacing: -0.5px;
+    background: linear-gradient(135deg, var(--accent-primary), var(--accent-purple));
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+/* Premium Buttons Styling */
+.btn-modern {
+    padding: 0.8rem 2rem;
+    border-radius: 100px;
+    font-weight: 600;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+}
+
+.btn-primary-modern {
+    background: linear-gradient(135deg, var(--accent-primary), var(--accent-purple));
+    color: white !important;
+    box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
+}
+
+.btn-primary-modern:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(59, 130, 246, 0.4);
+}
+
+.btn-outline-modern {
+    background: transparent;
+    border: 1px solid var(--card-border);
+    color: var(--text-main);
+}
+
+.btn-outline-modern:hover {
+    background: var(--card-glass);
+    color: var(--text-main);
+}
+
+/* Form Controls with theme-responsive backgrounds */
+.form-control {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--card-border);
+    border-radius: 14px;
+    color: var(--text-main);
+    padding: 0.8rem 1.2rem;
+}
+
+[data-bs-theme="light"] .form-control {
+    background: rgba(0, 0, 0, 0.02);
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    color: #1F2937;
+}
+
+.form-control:focus {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: var(--accent-primary);
+    color: var(--text-main);
+    box-shadow: none;
+}
+
+.text-muted-modern {
+    color: var(--text-muted);
+}
+
+/* Interactive Theme Toggle Switch */
+.theme-toggle {
+    cursor: pointer;
+    padding: 10px;
+    border-radius: 50%;
+    transition: background 0.3s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-main);
+}
+.theme-toggle:hover {
+    background: var(--card-glass);
+}
+
+/* Genomics Background Visualization (Fixed Position) */
+.page-bg {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -10;
+    background-image: url('/static/images/genomics_bg.png');
+    background-size: cover;
+    background-position: center;
+    opacity: 0.12;
+    transition: filter 0.6s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.6s ease;
+    pointer-events: none;
+}
+
+/* Auto-inversion for background helix in dark mode */
+[data-bs-theme="dark"] .page-bg {
+    filter: invert(1);
+    opacity: 0.08;
+}
+
+/* Entrance Animations */
+.reveal {
+    animation: fadeIn 0.8s ease-out forwards;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* 
+ * Dashboard & Queue Management Styles
+ */
+.status-badge-preparing { background: rgba(245, 158, 11, 0.15); color: #F59E0B; border: 1px solid rgba(245, 158, 11, 0.3); }
+.status-badge-ready { background: rgba(16, 185, 129, 0.15); color: #10B981; border: 1px solid rgba(16, 185, 129, 0.3); }
+.status-badge-collected { background: rgba(156, 163, 175, 0.15); color: #9CA3AF; border: 1px solid rgba(156, 163, 175, 0.3); }
+
+.table { color: var(--text-main); }
+.table thead th { 
+    text-transform: uppercase; 
+    font-size: 0.75rem; 
+    letter-spacing: 1px; 
+    font-weight: 600; 
+    color: var(--text-muted);
+    border-bottom: 1px solid var(--card-border);
+    padding: 1.5rem 1rem;
+}
+.table tbody td { 
+    padding: 1.5rem 1rem; 
+    border-bottom: 1px solid var(--card-border);
+    background: transparent;
+    color: var(--text-main); 
+}
+.table-hover tbody tr:hover td {
+    background: rgba(59, 130, 246, 0.05);
+}
+
+.modal-content {
+    background: var(--bg-deep);
+    backdrop-filter: blur(20px);
+    border: 1px solid var(--card-border);
+    border-radius: 32px;
+    color: var(--text-main);
+}
+.modal-header { border-bottom: 1px solid var(--card-border); padding: 2rem; }
+.modal-body { padding: 2rem; }
+
+[data-bs-theme="dark"] .btn-close { filter: invert(1); }
+
+/* Circle action buttons in table */
+.action-btn {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 12px;
+    transition: all 0.2s;
+    background: var(--card-glass);
+    border: 1px solid var(--card-border);
+    color: var(--text-main);
+}
+.action-btn:hover {
+    background: var(--accent-primary);
+    color: white;
+    transform: scale(1.1);
+}
+
+/* WhatsApp quick-notify button */
+.whatsapp-mini-btn {
+    width: 32px;
+    height: 32px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: #25D366;
+    color: white !important;
+    border-radius: 50%;
+    margin-left: 8px;
+    transition: transform 0.2s;
+    text-decoration: none;
+}
+.whatsapp-mini-btn:hover {
+    transform: scale(1.2);
+}
+
+.patient-name-hl {
+    color: var(--text-main);
+    font-weight: 600;
+    font-size: 1rem;
+}
+
+/* 
+ * Patient Portal & Ticket Lookup Styles
+ */
+.lookup-container {
+    min-height: 85vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+.lookup-card {
+    max-width: 500px;
+    width: 100%;
+    padding: 4rem 3rem;
+    text-align: center;
+}
+.hero-gradient-text {
+    background: linear-gradient(135deg, var(--accent-primary), var(--accent-purple));
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    font-weight: 800;
+    font-size: 2.8rem;
+    letter-spacing: -1px;
+}
+.input-group-modern {
+    background: var(--card-glass);
+    border: 1px solid var(--card-border);
+    border-radius: 100px;
+    padding: 8px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    transition: all 0.3s ease;
+    margin-top: 2rem;
+}
+.input-group-modern:focus-within {
+    border-color: var(--accent-primary);
+    box-shadow: 0 0 30px rgba(59, 130, 246, 0.15);
+}
+.input-group-modern input {
+    background: transparent;
+    border: none !important;
+    color: var(--text-main);
+    flex: 1;
+    outline: none !important;
+    font-weight: 500;
+    font-size: 1.1rem;
+    width: 100%;
+}
+.btn-lookup {
+    padding: 0.8rem 1.8rem !important;
+    height: 52px;
+    font-size: 0.95rem;
+    border-radius: 100px !important;
+    white-space: nowrap;
+}
+.pharmacist-link {
+    color: var(--accent-primary);
+    text-decoration: none;
+    font-weight: 700;
+}
+
+/* Mobile specific overrides for the lookup input */
+@media (max-width: 576px) {
+    .input-group-modern {
+        flex-direction: column;
+        background: transparent;
+        border: none;
+        padding: 0;
+        gap: 15px;
+    }
+    .input-group-modern input {
+        background: var(--card-glass);
+        border: 1px solid var(--card-border);
+        border-radius: 100px;
+        padding: 1rem 1.5rem;
+        text-align: center;
+    }
+    .btn-lookup {
+        width: 100%;
+    }
+}
+
+/* 
+ * Patient Status Tracking Styles
+ */
+.patient-container {
+    min-height: 80vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+}
+
+.status-ready-glow {
+    box-shadow: 0 0 50px rgba(16, 185, 129, 0.2) !important;
+    border-color: rgba(16, 185, 129, 0.4) !important;
+}
+
+.queue-circle {
+    width: 220px;
+    height: 220px;
+    border-radius: 50%;
+    background: var(--card-glass);
+    border: 2px solid var(--card-border);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    margin: 0 auto 2.5rem;
+    position: relative;
+    transition: all 0.5s ease;
+}
+
+.queue-num {
+    font-size: 84px;
+    font-weight: 800;
+    line-height: 1;
+    background: linear-gradient(135deg, var(--text-main), var(--accent-primary));
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.status-text {
+    font-size: 1.1rem;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    font-weight: 600;
+    margin-top: 10px;
+}
+
+.tracking-card {
+    max-width: 480px;
+    width: 100%;
+    padding: 4rem 3rem;
+}
+
+.dot-pulse {
+    width: 8px;
+    height: 8px;
+    background: var(--accent-primary);
+    border-radius: 50%;
+    display: inline-block;
+    margin-right: 8px;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.5); opacity: 0.5; }
+    100% { transform: scale(1); opacity: 1; }
+}
+
+.whatsapp-btn-modern {
+    background: #25D366;
+    color: white !important;
+    text-decoration: none;
+    padding: 1rem 2rem;
+    border-radius: 100px;
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    font-weight: 600;
+    transition: transform 0.3s, box-shadow 0.3s;
+    box-shadow: 0 4px 15px rgba(37, 211, 102, 0.3);
+}
+
+.whatsapp-btn-modern:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(37, 211, 102, 0.4);
+}
+
+/* 
+ * Authentication & Security UI Styles
+ */
+.strength-meter {
+    height: 6px;
+    width: 100%;
+    background-color: var(--card-border);
+    border-radius: 10px;
+    margin-top: 8px;
+    overflow: hidden;
+}
+.strength-bar {
+    height: 100%;
+    width: 0%;
+    transition: all 0.3s ease;
+}
+.strength-text {
+    font-size: 0.75rem;
+    margin-top: 4px;
+    font-weight: 500;
+}
+
+.security-key-box {
+    background: rgba(var(--accent-primary-rgb, 59, 130, 246), 0.1); 
+    border: 1px dashed var(--accent-primary);
+    border-radius: 16px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+}
