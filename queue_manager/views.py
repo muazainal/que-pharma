@@ -53,6 +53,7 @@ def api_ticket_list(request):
             'id': str(t.id),
             'queue_number': t.queue_number,
             'patient_name': t.patient_name,
+            'phone_number': t.phone_number, # Added phone number here
             'status': t.status,
             'created_at': t.created_at.strftime('%H:%M:%S'),
             'pharmacist': t.updated_by.username if t.updated_by else (t.created_by.username if t.created_by else 'Unknown')
@@ -108,7 +109,6 @@ def api_lookup_ticket(request):
         try:
             data = json.loads(request.body)
             phone = data.get('phone_number')
-            # Look for most recent ticket for this phone number that isn't collected
             ticket = PrescriptionTicket.objects.filter(phone_number__icontains=phone).exclude(status='Collected').order_by('-created_at').first()
             if ticket:
                 return JsonResponse({'status': 'success', 'id': str(ticket.id)})
