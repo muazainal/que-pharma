@@ -28,6 +28,9 @@ DEBUG = os.environ.get('DEBUG', 'True') == 'True'
 
 ALLOWED_HOSTS = ['*'] # Default to all, Railway will handle security via domains
 
+# Security: Secret key required for pharmacist signup
+PHARMACY_REGISTRATION_KEY = os.environ.get('PHARMACY_REGISTRATION_KEY', '[REMOVED]')
+
 
 # Application definition
 
