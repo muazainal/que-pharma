@@ -31,9 +31,30 @@
                 <h1 class="h3 fw-bold">Join Que-Pharma</h1>
                 <p class="text-muted-modern">Create your pharmacist account</p>
             </div>
+
+            {% if messages %}
+            <div class="mb-4">
+                {% for message in messages %}
+                <div class="alert alert-danger rounded-4 py-3 small shadow-sm border-0" role="alert" style="background: rgba(239, 68, 68, 0.1); color: #ef4444">
+                    {{ message }}
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
             
             <form method="post" class="needs-validation">
                 {% csrf_token %}
+
+                <!-- Security Secret Key -->
+                <div class="mb-5 p-4 rounded-4" style="background: rgba(var(--accent-primary-rgb, 59, 130, 246), 0.1); border: 1px dashed var(--accent-primary)">
+                    <label class="form-label d-flex justify-content-between align-items-center">
+                        <span class="small fw-bold text-accent">Pharmacy Secret Key</span>
+                        <span class="badge bg-danger">Required</span>
+                    </label>
+                    <input type="password" name="pharma_secret" class="form-control" placeholder="Ask your manager for the key" required>
+                    <div class="small text-muted-modern mt-2" style="font-size: 0.75rem;">Your pharmacy's private registration code.</div>
+                </div>
+
                 {% for field in form %}
                 <div class="mb-4">
                     <label class="form-label small fw-semibold text-muted-modern">{{ field.label }}</label>

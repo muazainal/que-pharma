@@ -5,6 +5,8 @@ from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth import login, logout, authenticate
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
+from django.contrib import messages
+from django.conf import settings
 from .models import PrescriptionTicket
 from .utils import produce_qr_code
 
@@ -18,6 +20,13 @@ def dashboard(request):
 def signup_view(request):
     if request.method == 'POST':
         form = UserCreationForm(request.POST)
+        pharma_secret = request.POST.get('pharma_secret')
+        
+        # Verify Registration Key
+        if pharma_secret != settings.PHARMACY_REGISTRATION_KEY:
+            messages.error(request, 'Invalid Pharmacy Secret Key. You do not have permission to create an account.')
+            return render(request, 'registration/signup.html', {'form': form})
+            
         if form.is_valid():
             user = form.save()
             login(request, user)
