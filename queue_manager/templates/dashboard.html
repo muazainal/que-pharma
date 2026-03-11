@@ -20,10 +20,10 @@
         padding: 1.5rem 1rem; 
         border-bottom: 1px solid var(--card-border);
         background: transparent;
-        color: var(--text-main); /* Explicitly set color for visibility */
+        color: var(--text-main); 
     }
     .table-hover tbody tr:hover td {
-        background: rgba(var(--accent-primary-rgb, 59, 130, 246), 0.05);
+        background: rgba(59, 130, 246, 0.05);
     }
     
     .modal-content {
@@ -56,7 +56,6 @@
         transform: scale(1.1);
     }
 
-    /* Explicitly highlight patient name for accessibility */
     .patient-name-hl {
         color: var(--text-main);
         font-weight: 600;
@@ -88,6 +87,7 @@
                 <tr>
                     <th>Ticket</th>
                     <th>Patient Name</th>
+                    <th>Contact</th> <!-- New Contact Column -->
                     <th>Status</th>
                     <th>Pharmacist</th>
                     <th>Created</th>
@@ -97,7 +97,7 @@
             </thead>
             <tbody id="ticketsBody">
                 <tr>
-                    <td colspan="7" class="text-center py-5">
+                    <td colspan="8" class="text-center py-5">
                         <div class="spinner-border text-primary" role="status">
                             <span class="visually-hidden">Loading...</span>
                         </div>
@@ -167,7 +167,7 @@ document.addEventListener('DOMContentLoaded', () => {
             .then(res => res.json())
             .then(data => {
                 if(data.tickets.length === 0) {
-                    ticketsBody.innerHTML = '<tr><td colspan="7" class="text-center py-5 text-muted-modern">No active tickets found</td></tr>';
+                    ticketsBody.innerHTML = '<tr><td colspan="8" class="text-center py-5 text-muted-modern">No active tickets found</td></tr>';
                     return;
                 }
                 
@@ -183,6 +183,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         <tr class="animate__animated animate__fadeIn">
                             <td><span class="fw-bold" style="color:var(--accent-primary)">#${ticket.queue_number}</span></td>
                             <td><span class="patient-name-hl">${ticket.patient_name}</span></td>
+                            <td><span class="text-muted-modern small">${ticket.phone_number || '<em class="opacity-50">Pending</em>'}</span></td>
                             <td><span class="badge badge-modern ${statusClass}">${ticket.status}</span></td>
                             <td><span class="text-muted-modern small">${ticket.pharmacist}</span></td>
                             <td><span class="text-muted-modern small">${ticket.created_at}</span></td>
