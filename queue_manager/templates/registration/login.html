@@ -1,33 +1,40 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<div class="row justify-content-center pt-5">
+<div class="row justify-content-center pt-5 reveal">
     <div class="col-md-5">
-        <div class="card p-5 border-0 shadow-lg" style="border-radius: 20px;">
-            <div class="text-center mb-4">
-                <h3 class="fw-bold text-primary">Pharmacist Login</h3>
-                <p class="text-muted">Enter your credentials to access the dashboard</p>
+        <div class="glass-card p-5">
+            <div class="text-center mb-5">
+                <h1 class="h3 fw-bold">Pharmacist Login</h1>
+                <p class="text-muted-modern">Access the secure management dashboard</p>
             </div>
+            
             <form method="post" class="needs-validation">
                 {% csrf_token %}
                 {% for field in form %}
-                <div class="mb-3">
-                    <label class="form-label fw-semibold small">{{ field.label }}</label>
-                    <input type="{{ field.field.widget.input_type|default:'text' }}" name="{{ field.name }}"
-                        class="form-control rounded-pill px-4 py-2 {% if field.errors %}is-invalid{% endif %}"
-                        placeholder="{{ field.label }}">
+                <div class="mb-4">
+                    <label class="form-label small fw-semibold text-muted-modern">{{ field.label }}</label>
+                    <input type="{{ field.field.widget.input_type|default:'text' }}" 
+                           name="{{ field.name }}"
+                           class="form-control {% if field.errors %}is-invalid{% endif %}"
+                           placeholder="Enter your {{ field.label|lower }}">
                     {% for error in field.errors %}
-                    <div class="invalid-feedback">{{ error }}</div>
+                    <div class="invalid-feedback small">{{ error }}</div>
                     {% endfor %}
                 </div>
                 {% endfor %}
-                <div class="d-grid mt-4">
-                    <button type="submit" class="btn btn-primary btn-lg rounded-pill py-2">Sign In</button>
+                
+                <div class="d-grid mt-5">
+                    <button type="submit" class="btn-modern btn-primary-modern py-3">
+                        Sign In to Dashboard
+                    </button>
                 </div>
             </form>
+            
             <div class="text-center mt-4">
-                <p class="small text-muted mb-0">Don't have an account? <a href="{% url 'signup' %}"
-                        class="text-decoration-none fw-bold">Register here</a></p>
+                <p class="small text-muted-modern mb-0">
+                    New pharmacist? <a href="{% url 'signup' %}" class="text-white fw-bold text-decoration-none border-bottom border-secondary border-2 pb-1">Create an account</a>
+                </p>
             </div>
         </div>
     </div>
