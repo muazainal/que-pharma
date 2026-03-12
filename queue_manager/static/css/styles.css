@@ -152,14 +152,21 @@ h1, h2, h3, h4, h5, h6, .navbar-brand {
     cursor: pointer;
     padding: 10px;
     border-radius: 50%;
-    transition: background 0.3s;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     display: flex;
     align-items: center;
     justify-content: center;
     color: var(--text-main);
+    border: 1px solid var(--card-border);
+    background: var(--card-glass);
 }
 .theme-toggle:hover {
-    background: var(--card-glass);
+    background: rgba(var(--accent-primary-rgb, 59, 130, 246), 0.1);
+    border-color: var(--accent-primary);
+    transform: rotate(15deg);
+}
+.theme-toggle:active {
+    transform: scale(0.9);
 }
 
 /* Genomics Background Visualization (Fixed Position) */
@@ -252,6 +259,37 @@ h1, h2, h3, h4, h5, h6, .navbar-brand {
     transform: scale(1.1);
 }
 
+/* Status stepper layout for dashboard actions */
+.status-stepper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--card-glass);
+    border: 1px solid var(--card-border);
+    border-radius: 100px;
+    padding: 2px;
+    width: fit-content;
+    margin: 0 auto;
+}
+
+.status-stepper .btn {
+    border-radius: 100px;
+    padding: 0.4rem 1.2rem;
+    font-size: 0.8rem;
+    font-weight: 600;
+    border: none;
+    transition: all 0.2s;
+    background: transparent;
+}
+
+.status-stepper .btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+[data-bs-theme="light"] .status-stepper .btn:hover {
+    background: rgba(0, 0, 0, 0.05);
+}
+
 /* WhatsApp quick-notify button */
 .whatsapp-mini-btn {
     width: 32px;
@@ -310,7 +348,7 @@ h1, h2, h3, h4, h5, h6, .navbar-brand {
     align-items: center;
     gap: 12px;
     transition: all 0.3s ease;
-    margin-top: 2rem;
+    margin-top: 1rem;
 }
 .input-group-modern:focus-within {
     border-color: var(--accent-primary);

@@ -13,22 +13,30 @@
             <p class="text-muted-modern mt-2">Enter your phone number to see your status.</p>
         </div>
 
-        <form id="lookupForm">
+        <form id="lookupForm" class="mt-4">
             {% csrf_token %}
-            <!-- Modernized Phone Input Group with Icon and Integrated Button -->
-            <div class="input-group-modern">
+            
+            <!-- Phone Number Input -->
+            <div class="input-group-modern mb-2">
                 <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="text-muted-modern">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
                 </svg>
-                <input type="tel" id="phoneNumber" placeholder="+60123456789" required>
+                <input type="tel" id="phoneNumber" placeholder="Phone Number (e.g. 0123456789)" required>
+            </div>
+
+            <!-- Optional: Angka Giliran (Clinic Ticket Tally) -->
+            <div class="input-group-modern">
+                <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="text-muted-modern">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+                </svg>
+                <input type="number" id="ticketNumber" placeholder="Angka Giliran Clinic (Optional)">
                 <button type="submit" class="btn-modern btn-primary-modern btn-lookup">
-                    Find Status
+                    Track
                 </button>
             </div>
             
-            <!-- Error Feedback: Triggered via AJAX if no ticket found -->
             <div id="errorMsg" class="text-danger small mt-3 fw-medium" style="display: none; animation: fadeIn 0.3s;">
-                Ticket not found. Please try again or ask the counter.
+                Ticket not found. Please ensure your name is registered at the counter.
             </div>
         </form>
 
@@ -52,6 +60,7 @@
     document.getElementById('lookupForm').addEventListener('submit', (e) => {
         e.preventDefault();
         const phone = document.getElementById('phoneNumber').value.trim();
+        const ticketNum = document.getElementById('ticketNumber').value.trim();
         const errorMsg = document.getElementById('errorMsg');
         
         errorMsg.style.display = 'none';
@@ -59,7 +68,10 @@
         // Perform the lookup via API to find matching ticket ID
         fetch('/api/lookup-ticket/', {
             method: 'POST',
-            body: JSON.stringify({ phone_number: phone }),
+            body: JSON.stringify({ 
+                phone_number: phone,
+                queue_number: ticketNum
+            }),
             headers: { 
                 'Content-Type': 'application/json',
                 'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value

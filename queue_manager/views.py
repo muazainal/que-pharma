@@ -135,13 +135,29 @@ def api_check_status(request, ticket_id):
 
 @csrf_exempt
 def api_create_ticket(request):
-    """Staff API: Creates a new prescription entry and assigns a queue number."""
+    """
+    Staff API: Creates a new prescription entry. 
+    Supports manual queue_number input to 'tally' with clinic numbers.
+    """
     if request.method == 'POST':
         try:
             data = json.loads(request.body)
-            # Find the next sequential queue number
-            last_ticket = PrescriptionTicket.objects.order_by('-queue_number').first()
-            queue_num = (last_ticket.queue_number + 1) if last_ticket else 1
+            
+            # Check for manual number override (clinic tally)
+            manual_num = data.get('queue_number')
+            
+            if manual_num:
+                queue_num = int(manual_num)
+                # Ensure no collisions with existing active/recent tickets
+                if PrescriptionTicket.objects.filter(queue_number=queue_num).exists():
+                    return JsonResponse({
+                        'status': 'error', 
+                        'message': f'Ticket #{queue_num} already exists in the system.'
+                    }, status=400)
+            else:
+                # Auto-calculate the next available number
+                last_ticket = PrescriptionTicket.objects.order_by('-queue_number').first()
+                queue_num = (last_ticket.queue_number + 1) if last_ticket else 1
             
             ticket = PrescriptionTicket.objects.create(
                 queue_number=queue_num,
@@ -149,14 +165,17 @@ def api_create_ticket(request):
                 phone_number=data.get('phone_number', ''),
                 created_by=request.user if request.user.is_authenticated else None
             )
-            return JsonResponse({'status': 'success', 'id': str(ticket.id)})
+            return JsonResponse({'status': 'success', 'id': str(ticket.id), 'num': queue_num})
         except Exception as e:
             return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
     return JsonResponse({'status': 'error'}, status=400)
 
 @csrf_exempt
 def api_update_status(request, ticket_id):
-    """Staff API: Transition a ticket between 'Preparing', 'Ready', and 'Collected'."""
+    """
+    Staff API: Transition a ticket status.
+    Returns ticket details so the dashboard can trigger notification prompts.
+    """
     if request.method == 'POST':
         try:
             data = json.loads(request.body)
@@ -165,25 +184,55 @@ def api_update_status(request, ticket_id):
             if request.user.is_authenticated:
                 ticket.updated_by = request.user
             ticket.save()
-            return JsonResponse({'status': 'success'})
+            return JsonResponse({
+                'status': 'success',
+                'id': str(ticket.id),
+                'patient_name': ticket.patient_name,
+                'phone_number': ticket.phone_number,
+                'new_status': ticket.status
+            })
         except Exception as e:
             return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
     return JsonResponse({'status': 'error'}, status=400)
 
 @csrf_exempt
 def api_lookup_ticket(request):
-    """Patient API: Searches for active tickets by phone number."""
+    """
+    Patient API: Searches for tickets.
+    If 'Angka Giliran' (queue_number) is provided, it tallies the patient's phone
+    with that specific ticket number. Otherwise, it searches by phone.
+    """
     if request.method == 'POST':
         try:
             data = json.loads(request.body)
             phone = data.get('phone_number')
-            # Look for recent active tickets associated with this phone number
-            ticket = PrescriptionTicket.objects.filter(phone_number__icontains=phone).exclude(status='Collected').order_by('-created_at').first()
-            if ticket:
-                return JsonResponse({'status': 'success', 'id': str(ticket.id)})
+            q_num = data.get('queue_number')
+            
+            # Scenario A: Patient provides their clinic ticket number to tally
+            if q_num:
+                ticket = PrescriptionTicket.objects.filter(
+                    queue_number=q_num
+                ).exclude(status='Collected').order_by('-created_at').first()
+                
+                if ticket:
+                    # Tally the phone number to this ticket if not already set correctly
+                    if ticket.phone_number != phone:
+                        ticket.phone_number = phone
+                        ticket.save()
+                    return JsonResponse({'status': 'success', 'id': str(ticket.id)})
+
+            # Scenario B: Classic lookup by phone number
+            if phone:
+                ticket = PrescriptionTicket.objects.filter(
+                    phone_number__icontains=phone
+                ).exclude(status='Collected').order_by('-created_at').first()
+                
+                if ticket:
+                    return JsonResponse({'status': 'success', 'id': str(ticket.id)})
+            
             return JsonResponse({'status': 'not_found'}, status=404)
         except Exception as e:
-            return JsonResponse({'status': 'error'}, status=400)
+            return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
     return JsonResponse({'status': 'error'}, status=400)
 
 @csrf_exempt

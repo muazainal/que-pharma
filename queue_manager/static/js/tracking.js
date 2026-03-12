@@ -27,6 +27,11 @@ document.addEventListener('DOMContentLoaded', () => {
     let lastStatus = window.initialStatus || "Preparing";
     let countdown = 10;
 
+    // Request notification permission on load
+    if ("Notification" in window && Notification.permission !== "denied") {
+        Notification.requestPermission();
+    }
+
     /**
      * Updates the visual state of the tracking page based on current status
      * @param {string} status - 'Preparing', 'Ready', or 'Collected'
@@ -48,10 +53,20 @@ document.addEventListener('DOMContentLoaded', () => {
             circleDisplay.style.borderColor = 'rgba(16, 185, 129, 0.6)';
             circleDisplay.classList.add('animate__animated', 'animate__pulse', 'animate__infinite');
             
-            // Critical Feedback: Play sound and vibrate ONLY when status first changes to Ready
+            // Critical Feedback: Play sound, vibrate, AND send system notification
             if (lastStatus !== 'Ready') {
                 notificationSound.play().catch(e => console.log('Autoplay blocked:', e));
-                if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
+                if (navigator.vibrate) navigator.vibrate([200, 100, 200, 100, 500]);
+
+                // Send System Level Notification (Works if browser is in background)
+                if ("Notification" in window && Notification.permission === "granted") {
+                    new Notification("Ubat Anda Sudah Sedia! ✅", {
+                        body: "Sila datang ke kaunter farmasi untuk menuntut ubat anda. Terima kasih!",
+                        icon: "/static/img/logo.png", // Ensure you have a logo or generic icon
+                        tag: "ticket-ready",
+                        vibrate: [200, 100, 200]
+                    });
+                }
             }
         } else if (status === 'Collected') {
             // Gray/Muted palette for archvied phase

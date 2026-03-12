@@ -65,10 +65,10 @@ document.addEventListener('DOMContentLoaded', () => {
                             <td><span class="text-muted-modern small">${ticket.pharmacist}</span></td>
                             <td><span class="text-muted-modern small">${ticket.created_at}</span></td>
                             <td>
-                                <div class="btn-group btn-group-sm rounded-pill overflow-hidden" style="border: 1px solid var(--card-border)">
-                                    <button class="btn btn-dark text-warning border-0" onclick="updateStatus('${ticket.id}', 'Preparing')">Prep</button>
-                                    <button class="btn btn-dark text-success border-0" onclick="updateStatus('${ticket.id}', 'Ready')">Ready</button>
-                                    <button class="btn btn-dark text-secondary border-0" onclick="updateStatus('${ticket.id}', 'Collected')">Collect</button>
+                                <div class="status-stepper">
+                                    <button class="btn text-warning" onclick="updateStatus('${ticket.id}', 'Preparing')">Prep</button>
+                                    <button class="btn text-success" onclick="updateStatus('${ticket.id}', 'Ready')">Ready</button>
+                                    <button class="btn text-secondary" onclick="updateStatus('${ticket.id}', 'Collected')">Collect</button>
                                 </div>
                             </td>
                             <td class="text-end">
@@ -93,6 +93,33 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     /**
+     * Shows a proactive notification toast with a WhatsApp link
+     */
+    function showNotification(result) {
+        if (!result.phone_number) return;
+
+        const toastEl = document.getElementById('statusToast');
+        const toastActionArea = document.getElementById('toastActionArea');
+        const toastMessage = document.getElementById('toastMessage');
+        const bootstrapToast = new bootstrap.Toast(toastEl);
+
+        const cleanPhone = result.phone_number.replace(/\D/g,'');
+        const msg = result.new_status === 'Preparing' 
+            ? 'Salam sejahtera, terima kasih, ubat anda sedang disedikan, harap sbar menunggu'
+            : 'Salam sejahtera, ubat anda sudah sedia untuk dituntut.';
+        const waUrl = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(msg)}`;
+
+        toastMessage.textContent = `${result.patient_name} is now marked as ${result.new_status}. Inform them?`;
+        toastActionArea.innerHTML = `
+            <a href="${waUrl}" target="_blank" class="btn-modern btn-primary-modern py-2 w-100" onclick="bootstrap.Toast.getInstance(document.getElementById('statusToast')).hide()">
+                Send WhatsApp Now
+            </a>
+        `;
+
+        bootstrapToast.show();
+    }
+
+    /**
      * Updates the status of a specific ticket via the API
      * @param {string} ticketId 
      * @param {string} newStatus 
@@ -104,7 +131,12 @@ document.addEventListener('DOMContentLoaded', () => {
             headers: { 'Content-Type': 'application/json' }
         })
         .then(res => res.json())
-        .then(() => fetchTickets())
+        .then(result => {
+            if (result.status === 'success') {
+                fetchTickets();
+                showNotification(result);
+            }
+        })
         .catch(err => console.error('Status update failed:', err));
     };
 
@@ -139,9 +171,31 @@ document.addEventListener('DOMContentLoaded', () => {
                 addPatientModal.hide();
                 addTicketForm.reset();
                 fetchTickets();
+            } else {
+                alert(result.message || 'Failed to create ticket');
             }
         })
         .catch(err => console.error('Failed to create ticket:', err));
+    });
+
+    /**
+     * Automatic Suggestion for Next Ticket Number
+     * Pre-fills the 'Ticket Number' field when the modal is opened.
+     */
+    document.getElementById('addPatientModal').addEventListener('show.bs.modal', () => {
+        const manualInput = document.getElementById('manualQueueNumber');
+        fetch('/api/tickets/')
+            .then(res => res.json())
+            .then(data => {
+                let nextNum = 1;
+                if (data.tickets.length > 0) {
+                    // Extract all queue numbers to find the highest
+                    const nums = data.tickets.map(t => parseInt(t.queue_number));
+                    nextNum = Math.max(...nums) + 1;
+                }
+                manualInput.value = nextNum;
+                manualInput.placeholder = nextNum;
+            });
     });
 
     // Initial load

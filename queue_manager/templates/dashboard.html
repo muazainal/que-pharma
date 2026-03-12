@@ -36,7 +36,7 @@
                     <th>Status</th>
                     <th>Pharmacist</th>
                     <th>Created</th>
-                    <th>Actions</th>
+                    <th class="text-center">Actions</th>
                     <th class="text-end">Options</th>
                 </tr>
             </thead>
@@ -64,6 +64,16 @@
             </div>
             <div class="modal-body">
                 <form id="addTicketForm">
+                    <!-- Ticket Number: Tally with Clinic -->
+                    <div class="mb-4">
+                        <label class="form-label fw-medium text-muted-modern d-flex justify-content-between">
+                            Ticket Number
+                            <span class="badge bg-primary-subtle text-primary border border-primary-subtle">Clinic Tally</span>
+                        </label>
+                        <input type="number" class="form-control fw-bold" name="queue_number" id="manualQueueNumber" placeholder="Loading...">
+                        <div class="small text-muted-modern mt-1" style="font-size: 0.75rem;">Leave empty to use the next available number.</div>
+                    </div>
+
                     <!-- Patient Name Input -->
                     <div class="mb-4">
                         <label class="form-label fw-medium text-muted-modern">Patient Name</label>
@@ -99,6 +109,21 @@
                 <div class="mt-4">
                     <button type="button" class="btn-modern btn-outline-modern w-100" data-bs-dismiss="modal">Close</button>
                 </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Toast Notification System: Proactive staff prompts -->
+<div class="toast-container position-fixed bottom-0 end-0 p-4" style="z-index: 2000;">
+    <div id="statusToast" class="toast glass-card border-0" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="toast-header bg-transparent border-0 pt-3 px-3">
+            <strong class="me-auto text-main" id="toastTitle">Status Updated</strong>
+            <button type="button" class="btn-close" data-bs-dismiss="toast"></button>
+        </div>
+        <div class="toast-body px-3 pb-4">
+            <p class="small text-muted-modern mb-3" id="toastMessage">Want to notify the patient?</p>
+            <div id="toastActionArea">
+                <!-- Action button injected via JS -->
             </div>
         </div>
     </div>
