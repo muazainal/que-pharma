@@ -29,7 +29,18 @@ SECRET_KEY = os.environ.get('SECRET_KEY')
 
 DEBUG = os.environ.get('DEBUG', 'True') == 'True'
 
-ALLOWED_HOSTS = ['*'] # Default to all, Railway will handle security via domains
+ALLOWED_HOSTS = ['*']
+
+# CSRF security for Railway domains
+CSRF_TRUSTED_ORIGINS = [
+    "https://*.railway.app",
+    "https://*.up.railway.app",
+]
+
+# Essential for Railway/Heroku to handle HTTPS correctly
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+USE_X_FORWARDED_HOST = True
+SECURE_SSL_REDIRECT = os.environ.get('SECURE_SSL_REDIRECT', 'False') == 'True'
 
 # Security: Secret key required for pharmacist signup
 PHARMACY_REGISTRATION_KEY = os.environ.get('PHARMACY_REGISTRATION_KEY')
