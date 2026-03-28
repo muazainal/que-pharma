@@ -11,6 +11,7 @@ static_root/
 
 # Environments
 .venv/
+.ven/
 venv/
 ENV/
 env.bak/
@@ -21,6 +22,7 @@ venv.bak/
 Thumbs.db
 
 # Project-specific
+heroku_datadump.json
 *.png
 *.jpg
 *.jpeg
