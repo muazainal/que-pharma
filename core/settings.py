@@ -31,10 +31,11 @@ DEBUG = os.environ.get('DEBUG', 'True') == 'True'
 
 ALLOWED_HOSTS = ['*']
 
-# CSRF security for Railway domains
+# CSRF security for Railway and Heroku domains
 CSRF_TRUSTED_ORIGINS = [
     "https://*.railway.app",
     "https://*.up.railway.app",
+    "https://*.herokuapp.com",
 ]
 
 # Essential for Railway/Heroku to handle HTTPS correctly
