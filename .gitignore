@@ -23,10 +23,10 @@ Thumbs.db
 
 # Project-specific
 heroku_datadump.json
-*.png
-*.jpg
-*.jpeg
-*.svg
+# *.png
+# *.jpg
+# *.jpeg
+# *.svg
 !static/
 !templates/
 !queue_manager/
